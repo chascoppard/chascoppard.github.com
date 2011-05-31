@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml"
+      xmlns:og="http://ogp.me/ns#">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Facebook Connect Example</title>
+    <meta property="og:title" content="Facebook Connect Demo"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="http://socialcrmbusdev.techlightenment.com/connectdemo.png"/>
+    <meta property="og:url" content="http://socialcrmbusdev.techlightenment.com/connectdemo.html"/>
+    <meta property="og:site-name" content="Facebook Connect Demo"/>
+    <meta property="fb:admins" content="581504668"/>
+  </head>
+  <body>
+    <div id="fb-root"></div>
+    <script>
+      window.fbAsyncInit = function() {
+        var like_button = document.getElementById("")
+        FB.init({appId: '218513098160159', status: true, cookie: true, xfbml: true});
+
+        renderLikeButton('like_btn', 'http://socialcrmbusdev.techlightenment.com/product.html', new Date().getTime().toString());
+
+        FB.Event.subscribe('auth.login', function(response) {
+                trace('auth.login');
+                loggedIn();
+        });
+
+        FB.Event.subscribe('auth.logout', function(response) {
+                trace('auth.logout');
+                loggedOut();
+        });
+
+        FB.Event.subscribe('auth.prompt', function(response) {
+                trace('auth.prompt');
+        });
+
+        FB.Event.subscribe('auth.sessionChange', function(response) {
+            trace('auth.sessionChange');
+        });
+
+        FB.Event.subscribe('auth.statusChange', function(response) {
+            trace('auth.statusChange');
+        });
+
+        FB.Event.subscribe('edge.create', function(href, response) {
+            trace('edge.create: ' + href);
+        });
+
+        FB.Event.subscribe('edge.remove', function(href, response) {
+            trace('edge.remove: ' + href);
+        });
+
+        FB.Event.subscribe('message.send', function(href, response) {
+            trace('message.send: ' + href);
+        });
+
+        FB.getLoginStatus(function(response) {
+            if (response.session) {
+                loggedIn(response.session);
+            } else {
+                loggedOut();
+            }
+        });
+      };
+      (function() {
+        var e = document.createElement('script');
+        e.type = 'text/javascript';
+        e.src = document.location.protocol + '//connect.facebook.net/en_GB/all.js';
+        e.async = true;
+        document.getElementById('fb-root').appendChild(e);
+      }());
+    </script>
+    <script>
+      function loggedIn(session) {
+          var btn = document.getElementById('login_button');
+          btn.disabled = false;
+          btn.value = 'Logout';
+          btn.onclick = logout;
+          var btn = document.getElementById('post_button');
+          btn.disabled = false;
+          FB.api('/me/likes', function(response) {
+              data = response['data'];
+              for (var key in data) {
+                  trace(data[key]['name']);
+              }
+          });
+      }
+
+      function loggedOut() {
+          var btn = document.getElementById('login_button');
+          btn.disabled = false;
+          btn.value = 'Login';
+          btn.onclick = login;
+          var btn = document.getElementById('post_button');
+          btn.disabled = true;
+          document.getElementById('output').innerHTML = '';
+      }
+    </script>
+    <script>
+      function renderLikeButton(id, url, ref) {
+          var div = document.getElementById(id, url);
+          div.innerHTML = '<fb:like href="' + url + '" ref="' + ref + '" show_faces="true"></fb:like>';
+      }
+    </script>
+
+    <script>
+      function trace(message) {
+          var div = document.getElementById('trace');
+          div.innerHTML = div.innerHTML + message + '<br/>';
+      }
+
+      function login() {
+          FB.login(function(response) {}, {perms:'email,user_birthday,status_update,publish_stream'});
+      }
+
+      function logout() {
+          FB.logout(function(response) {});
+      }
+
+      function postToWall() {
+          FB.ui(
+          {
+            method: 'feed',
+            name: 'Facebook Dialogs Example',
+            description: 'This is a demo of the Feed Dialog.',
+            message: 'Enter your message'
+          },
+          function(response) {
+              if (response && response.post_id) {
+                  trace('Post was published.');
+              } else {
+                  trace('Post was not published.');
+              }
+          }
+        );
+      }
+    </script>
+    <p></p><input type="button" id="login_button" disabled="true" value="Login"/></p>
+    <p><fb:login-button autologoutlink="true" perms="email,user_birthday,status_update,publish_stream"></fb:login-button></p>
+    <fb:registration redirect-uri="http://socialcrmbusdev.techlightenment.com/submit.php" 
+		 fields='[
+		   {"name":"name"},
+		   {"name":"birthday"},
+		   {"name":"gender"},
+		   {"name":"location"},
+		   {"name":"email"},
+                   {"name":"password", "view":"not_prefilled"},
+		   {"name":"quote","description":"Favourite quote","type":"text"},
+		   {"name":"colour","description":"Favourite colour","type":"select","options":
+		     {"blue":"Blue","green":"Green","puce":"Puce"}},
+		   {"name":"agree_tcs","description":"Agree to T&Cs","type":"checkbox"},
+		   {"name":"anniversary","description":"Anniversary","type":"date","required":false},
+		   {"name":"favourite_city","description":"Favourite city","type":"typeahead","categories":
+		     ["city"]},
+		   {"name":"captcha"}]' 
+                 onvalidate="validate">
+    </fb:registration> 
+
+        <script>
+        function validate(form) {
+          errors = {};
+          if (form.quote == "") {
+            errors.quote = "You didn't enter a favourite quote";
+          }
+          if (form.colour == "") {
+            errors.colour = "Pick choose your favourite colour";
+          }
+          if (!form.agree_tcs) {
+            errors.agree_tcs = "You have not agreed to the T&Cs";
+          }
+          return errors;
+        }
+        </script>
+
+
+    <p><input type="button" id="post_button" disabled="true" value="Post to wall" onclick="postToWall();"/></p>
+    <p><fb:like></fb:like></p>
+    <p><div id="like_btn"></div></p>
+    <p><fb:send href='http://socialcrmbusdev.techlightenment.com/product.html'></fb:like></p> 
+    <fb:activity site="http://socialcrmbusdev.techlightenment.com" width="300" height="300" header="true"></fb:activity>
+    <fb:recommendations site="http://socialcrmbusdev.techlightenment.com" width="300" height="300" header="true"></fb:recommendations>
+    <p><fb:comments href="http://socialcrmbusdev.techlightenment.com" num_posts="2" width="600"></fb:comments></p>
+    <p><fb:live-stream event_app_id="218513098160159" width="600" height="400" xid="" always_post_to_friends="false"></fb:live-stream></p>
+    <p><fb:facepile href="http://socialcrmbusdev.techlightenment.com" width="600" max_rows="1"></fb:facepile></p>
+    <p><div id="trace" style="font-size:8pt; height:200px; width:600px; overflow:scroll;"></div></p>
+    <p><div id="output" style="font-family: Courier"></div></p>
+  </body>
+</html>
+
